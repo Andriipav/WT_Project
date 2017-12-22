@@ -2,6 +2,7 @@ package com.willowtreeapps;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.Assert;
 import org.openqa.selenium.By;
@@ -13,13 +14,84 @@ import org.openqa.selenium.WebElement;
  */
 public class HomePage extends BasePage {
 
+	// method that returns 5 random numbers from 0 to 4
+	public static ArrayList<Integer> setArrayRandomNumber() {
+
+		ArrayList<Integer> numbers = new ArrayList<Integer>();
+		Random randomGenerator = new Random();
+		while (numbers.size() < 5) {
+
+			int random = randomGenerator.nextInt(5);
+			if (!numbers.contains(random)) {
+				numbers.add(random);
+			}
+		}
+		return numbers;
+	}
+
 	public HomePage(WebDriver driver) {
 		super(driver);
+	}
+
+	public void checkTriesAndCorrectAnswersCounters() {
+		int randomNumber = 0;
+		int index = 0;
+		boolean flag = true;
+		int correctCounter = 0;
+		int clicksQty = 0;
+		List<Integer> numbersArray = new ArrayList<Integer>();
+
+		sleep(6000);
+		// Getting name from page, use it to validate correct clicks
+		String whoIsName = driver.findElement(By.id("name")).getText();
+		// checking counter, use it in assertion
+		int countBeforeTries = Integer.parseInt(
+				driver.findElement(By.className("attempts")).getText());
+		int countBeforeCorrect = Integer.parseInt(
+				driver.findElement(By.className("correct")).getText());
+		// check that we don't click on correct answer
+		while (whoIsName.equals(driver.findElement(By.id("name")).getText())) {
+
+			if (flag) {
+				numbersArray = setArrayRandomNumber();
+				flag = false;
+			}
+			// click on random photo
+			randomNumber = numbersArray.get(index);
+			driver.findElement(
+					By.xpath("//div[@data-n='" + randomNumber + "']")).click();
+			sleep(6000);
+			clicksQty++;
+			// check whether we click on correct answer
+			if (!whoIsName
+					.equals(driver.findElement(By.id("name")).getText())) {
+				whoIsName = driver.findElement(By.id("name")).getText();
+				flag = true;
+				index = 0;
+				correctCounter++;
+
+			} else {
+				index++;
+			}
+			// hardcoded number of random clicks
+			if (clicksQty == 10) {
+				break;
+			}
+
+		}
+		Assert.assertEquals(countBeforeTries + 10, Integer.parseInt(
+				driver.findElement(By.className("attempts")).getText()));
+
+		Assert.assertEquals(countBeforeCorrect + correctCounter,
+				Integer.parseInt(
+						driver.findElement(By.className("correct")).getText()));
 	}
 
 	public void clickOnCorrectPerson() {
 		sleep(6000);
 		String correctName = driver.findElement(By.id("name")).getText();
+		// insert value from copy "who is " and insert in in xpath thus we get
+		// right picture to click on
 		String xpathCorrectPerson = WebElementsHelper
 				.selectedPerson(correctName);
 		sleep(6000);
@@ -48,7 +120,7 @@ public class HomePage extends BasePage {
 		int count = Integer.parseInt(
 				driver.findElement(By.className("attempts")).getText());
 
-		driver.findElement(By.className("photo")).click();
+		driver.findElement(By.xpath("//div[@data-n='0']")).click();
 
 		sleep(6000);
 
@@ -60,7 +132,10 @@ public class HomePage extends BasePage {
 	}
 
 	public void validateNameAndPhotosChange() {
+		// Implicit waiter should be used here, sorry for that. left as is
+		// because of time constrains.
 		sleep(6000);
+		// Create 2 lists and compare them
 		String whoIsName1 = driver.findElement(By.id("name")).getText();
 		List<String> imgSet1 = new ArrayList<String>();
 

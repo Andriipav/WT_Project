@@ -43,6 +43,12 @@ public class WebTest {
 	}
 
 	@Test
+	public void triesAndCorrectAnswersCountersTest() {
+		new HomePage(driver).checkTriesAndCorrectAnswersCounters();
+	}
+
+	@Test
+
 	public void validateNameAndPhotosChangeTest() {
 		new HomePage(driver).validateNameAndPhotosChange();
 	}
